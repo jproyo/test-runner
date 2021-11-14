@@ -1,0 +1,122 @@
+name:               test-runner
+version:            '0.0.0.1'
+synopsis:           Test Runner App
+description:        Please see README.md
+category:           WebApp
+author:             Juan Pablo Royo Sales
+maintainer:         juanpablo.royo@gmail.com
+homepage:           https://github.com/jproyo/test-runner
+
+ghc-options:
+  - -O3
+  - -Wall
+  - -Werror
+  - -fno-warn-partial-type-signatures
+  - -fno-warn-orphans
+  - -fconstraint-solver-iterations=0
+  - -flate-specialise 
+  - -fspecialise-aggressively
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+  - -Wno-unused-top-binds
+
+default-extensions:
+  - ConstraintKinds
+  - DataKinds
+  - DefaultSignatures
+  - DeriveAnyClass
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveLift
+  - DerivingStrategies
+  - DerivingVia
+  - EmptyCase
+  - FlexibleContexts
+  - FlexibleInstances
+  - FunctionalDependencies
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - MultiParamTypeClasses
+  - MultiWayIf
+  - NoImplicitPrelude
+  - OverloadedStrings
+  - PartialTypeSignatures
+  - PolyKinds
+  - RecordWildCards
+  - Rank2Types
+  - RankNTypes
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TemplateHaskell
+  - TypeApplications
+  - TypeFamilies
+  - TypeFamilyDependencies
+  - TypeOperators
+  
+  
+
+dependencies:
+  - aeson
+  - async
+  - base
+  - bytestring
+  - co-log
+  - containers
+  - deriving-aeson
+  - extra
+  - http-client
+  - http-types
+  - inline-js
+  - inline-js-core
+  - lens
+  - mtl
+  - network
+  - relude
+  - optparse-applicative
+  - servant-server
+  - time
+  - uuid
+  - wai
+  - wai-cors
+  - warp
+  - yaml
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - Runner
+
+executables:
+  test-runner:
+    source-dirs:
+      app
+    main:
+      Main.hs
+    dependencies:
+      - test-runner
+    ghc-options:
+      - -threaded
+      - -O3
+      - -rtsopts
+      - -with-rtsopts=-N
+
+tests:
+  test-runner-tests:
+    main: Spec.hs
+    source-dirs:
+      - test
+      - src
+    ghc-options:
+      - -threaded
+      - -O2
+      - -rtsopts
+      - -with-rtsopts=-N
+      # TODO remove no warnings
+      - -Wno-unused-local-binds
+      - -Wno-unused-matches
+    dependencies:
+      - hspec == 2.*
+      - QuickCheck
+
