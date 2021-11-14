@@ -34,14 +34,9 @@ submitTests :: (MonadIO m, MonadReader (TMVar TestsState) m)
             -> m (Either AppError TestsToRunResponse)
 submitTests tests = do
   currentState <- ask
-  st           <- liftIO $ atomically $ readTMVar currentState
-  if not $ M.null st
-    then return
-      (Left $ ALREADY_SUBMITTED "Tests Already submitted. Wait for finishing")
-    else do
-      submitted <- submitNew tests
-      liftIO $ void $ atomically $ swapTMVar currentState submitted
-      return $ Right $ toTestsToRunResponse submitted
+  submitted <- submitNew tests
+  liftIO $ void $ atomically $ swapTMVar currentState submitted
+  return $ Right $ toTestsToRunResponse submitted
 
 submitNew :: (MonadIO m, MonadReader (TMVar TestsState) m)
           => TestsToRun

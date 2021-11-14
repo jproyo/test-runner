@@ -19,6 +19,16 @@ data TestStatus = NotStartedYet
      ]
     TestStatus
 
+data GeneralStatus = Submitted
+                   | InProgress
+                   | Finished
+  deriving (Generic, Show)
+  deriving ToJSON via CustomJSON
+    '[ OmitNothingFields
+     , FieldLabelModifier '[CamelToSnake]
+     ]
+    GeneralStatus
+
 type Function = Text
 
 newtype TestsToRun = TestsToRun [TestToRun]
@@ -36,9 +46,16 @@ data TestToRun = TestToRun
      ]
     TestToRun
 
-newtype TestsToRunResponse = TestsToRunResponse [TestToRunResp]
+data TestsToRunResponse = TestsToRunResponse
+  { _ttrrGeneralStatus :: GeneralStatus
+  , _ttrrResults       :: [TestToRunResp]
+  }
   deriving (Generic, Show)
-  deriving newtype ToJSON
+  deriving ToJSON via CustomJSON
+    '[ OmitNothingFields
+     , FieldLabelModifier '[StripPrefix "_ttrr" , CamelToSnake]
+     ]
+    TestsToRunResponse
 
 data StatusDesc = StatusDesc
   { _sdDescription :: Text
@@ -66,12 +83,33 @@ makeLenses ''TestToRun
 makePrisms ''TestStatus
 makeLenses ''StatusDesc
 
+inProgress :: TestStatus -> Bool
+inProgress NotStartedYet = False
+inProgress _             = True
+
+hasFinished :: TestStatus -> Bool
+hasFinished Passed = True
+hasFinished Failed = True
+hasFinished _      = False
+
 emptyState :: TestsState
 emptyState = M.empty
 
 toTestsToRunResponse :: TestsState -> TestsToRunResponse
-toTestsToRunResponse =
-  TestsToRunResponse . fmap (\(uuid, sd) -> TestToRunResp uuid (sd^.sdDescription) (sd^.sdStatus)) . M.toList
+toTestsToRunResponse st =
+  let
+    results =
+      fmap
+          (\(uuid, sd) ->
+            TestToRunResp uuid (sd ^. sdDescription) (sd ^. sdStatus)
+          )
+        . M.toList
+        $ st
+    generalStatus | all (hasFinished . view ttrrStatus) results = Finished
+                  | any (inProgress . view ttrrStatus) results = InProgress
+                  | otherwise = Submitted
+  in
+    TestsToRunResponse generalStatus results
 
 newStatus :: Float -> TestStatus
 newStatus s | s > 0.5   = Passed
