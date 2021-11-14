@@ -20,8 +20,12 @@ import           Runner.Test
 import           Servant                       as S
 
 -- brittany-disable-next-binding
-type TestRunnerApp =  "test" :> "runner" :> "submit"
-                     :> ReqBody '[JSON] TestsToRun :> Post '[JSON] TestsToRunResponse
+type TestRunnerApp =  "test" :> "runner" :> "submit" 
+                     :> ReqBody '[JSON] TestsToRun
+                     :> Post '[JSON] TestsToRunResponse
+                     :<|> "test" :> "runner" :> "submit" :> "new"
+                     :> ReqBody '[JSON] TestsToRun
+                     :> Post '[JSON] TestsToRunResponse
                      :<|> "test" :> "runner" :> "status"
                      :> Get '[JSON] TestsToRunResponse
 
@@ -31,10 +35,13 @@ testRunnerApp :: Proxy TestRunnerApp
 testRunnerApp = Proxy
 
 server :: ServerT TestRunnerApp AppM
-server = submitEndpoint :<|> getStatuses
+server = submitEndpointCurrent :<|> submitNewEndpoint :<|> getStatuses
 
-submitEndpoint :: TestsToRun -> AppM TestsToRunResponse
-submitEndpoint = mapError' <=< submitTests
+submitEndpointCurrent :: TestsToRun -> AppM TestsToRunResponse
+submitEndpointCurrent = mapError' <=< submitTestsCurrent
+
+submitNewEndpoint :: TestsToRun -> AppM TestsToRunResponse
+submitNewEndpoint = mapError' <=< submitTestsNew
 
 getStatuses :: AppM TestsToRunResponse
 getStatuses = statuses >>= mapError'

@@ -1,8 +1,9 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Runner.Test
-  ( submitTests
-  , statuses
+  ( statuses
+  , submitTestsNew
+  , submitTestsCurrent
   ) where
 
 import           Control.Concurrent
@@ -19,6 +20,8 @@ import           JS.Utils
 import           Language.JavaScript.Inline
 import           Relude
 
+data SubmitState = New | Current
+newtype Submit (s :: SubmitState) = Submit TestsToRun
 
 statuses :: (MonadIO m, MonadReader (TMVar TestsState) m)
          => m (Either AppError TestsToRunResponse)
@@ -29,14 +32,36 @@ statuses = do
     then return $ Left NO_TESTS_SUBMITTED_YET
     else return $ Right $ toTestsToRunResponse st
 
-submitTests :: (MonadIO m, MonadReader (TMVar TestsState) m)
-            => TestsToRun
-            -> m (Either AppError TestsToRunResponse)
-submitTests tests = do
+submitTestsNew :: (MonadIO m, MonadReader (TMVar TestsState) m)
+               => TestsToRun
+               -> m (Either AppError TestsToRunResponse)
+submitTestsNew = submitTestsNew' . Submit
+
+submitTestsCurrent :: (MonadIO m, MonadReader (TMVar TestsState) m)
+                   => TestsToRun
+                   -> m (Either AppError TestsToRunResponse)
+submitTestsCurrent = submitTestsCurrent' . Submit
+
+submitTestsNew' :: (MonadIO m, MonadReader (TMVar TestsState) m)
+                => Submit 'New
+                -> m (Either AppError TestsToRunResponse)
+submitTestsNew' (Submit tests) = do
   currentState <- ask
-  submitted <- submitNew tests
+  submitted    <- submitNew tests
   liftIO $ void $ atomically $ swapTMVar currentState submitted
   return $ Right $ toTestsToRunResponse submitted
+
+submitTestsCurrent' :: (MonadIO m, MonadReader (TMVar TestsState) m)
+                    => Submit 'Current
+                    -> m (Either AppError TestsToRunResponse)
+submitTestsCurrent' (Submit tests) = do
+  currentState <- ask
+  st           <- liftIO $ atomically $ readTMVar currentState
+  if not $ M.null st
+    then return
+      (Left $ ALREADY_SUBMITTED "Tests Already submitted. Wait for finishing")
+    else submitTestsNew' (Submit tests)
+
 
 submitNew :: (MonadIO m, MonadReader (TMVar TestsState) m)
           => TestsToRun
