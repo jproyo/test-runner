@@ -7,6 +7,7 @@ module Runner.Test
 
 import           Control.Concurrent
 import           Control.Concurrent.Async
+import           Control.Lens
 import           Control.Monad.Reader
 import           Data.Either.Extra
 import           Data.Error
@@ -25,7 +26,7 @@ statuses = do
   currentState <- ask
   st           <- liftIO $ atomically $ readTMVar currentState
   if M.null st
-    then return $ Left $ NO_TESTS_SUBMITTED_YET
+    then return $ Left NO_TESTS_SUBMITTED_YET
     else return $ Right $ toTestsToRunResponse st
 
 submitTests :: (MonadIO m, MonadReader (TMVar TestsState) m)
@@ -47,26 +48,29 @@ submitNew :: (MonadIO m, MonadReader (TMVar TestsState) m)
           -> m TestsState
 submitNew (TestsToRun tests) = do
   currentState <- ask
-  toRun <- mapM (\_ -> (,) <$> liftIO nextRandom <*> pure NotStartedYet) tests
-  liftIO $ void $ forkIO $ forConcurrently_ (zip tests toRun)
-                                            (runInJS currentState)
+  toRun        <- mapM
+    (\t -> (,) <$> liftIO nextRandom <*> pure
+      (StatusDesc (t ^. ttrDescription) NotStartedYet)
+    )
+    tests
+  liftIO $ void $ forkIO $ forConcurrently_ toRun (runInJS currentState)
   return $ M.fromList toRun
 
 onFinished :: TMVar TestsState -> F32 -> WrapUUID -> IO ()
-onFinished st (F32 passed) (WrapUUID uuid) = void $ atomically $ do
-  currentState <- readTMVar st
-  let updatedState =
-        M.update (const $ Just (newStatus passed)) uuid currentState
-  swapTMVar st updatedState
+onFinished st (F32 passed) (WrapUUID uuid) =
+  updateState st uuid (newStatus passed)
 
 whenStarted :: TMVar TestsState -> UUID -> IO ()
-whenStarted st uuid = atomically $ do
+whenStarted st uuid = updateState st uuid Running
+
+updateState :: TMVar TestsState -> UUID -> TestStatus -> IO ()
+updateState st uuid status = atomically $ do
   currentState <- readTMVar st
-  let updatedState = M.update (const $ Just Running) uuid currentState
+  let updatedState = M.update (Just . set sdStatus status) uuid currentState
   void $ swapTMVar st updatedState
 
-runInJS :: TMVar TestsState -> (TestToRun, (UUID, TestStatus)) -> IO ()
-runInJS currentState (_, (uuid, _)) = do
+runInJS :: TMVar TestsState -> (UUID, StatusDesc) -> IO ()
+runInJS currentState (uuid, _) = do
   void $ newSession defaultConfig >>= \_session -> do
     let _uuid = WrapUUID uuid
     _callback <- export _session (onFinished currentState)

@@ -19,7 +19,6 @@ data TestStatus = NotStartedYet
      ]
     TestStatus
 
--- TODO
 type Function = Text
 
 newtype TestsToRun = TestsToRun [TestToRun]
@@ -41,9 +40,15 @@ newtype TestsToRunResponse = TestsToRunResponse [TestToRunResp]
   deriving (Generic, Show)
   deriving newtype ToJSON
 
+data StatusDesc = StatusDesc
+  { _sdDescription :: Text
+  , _sdStatus      :: TestStatus
+  }
+
 data TestToRunResp = TestToRunResp
-  { _ttrrId     :: UUID
-  , _ttrrStatus :: TestStatus
+  { _ttrrId          :: UUID
+  , _ttrrDescription :: Text
+  , _ttrrStatus      :: TestStatus
   }
   deriving (Generic, Show)
   deriving ToJSON via CustomJSON
@@ -53,19 +58,21 @@ data TestToRunResp = TestToRunResp
     TestToRunResp
 
 
-type TestsState = M.Map UUID TestStatus
+type TestsState = M.Map UUID StatusDesc
 
 makeLenses ''TestToRunResp
 makeLenses ''TestsToRunResponse
 makeLenses ''TestToRun
 makePrisms ''TestStatus
+makeLenses ''StatusDesc
 
 emptyState :: TestsState
 emptyState = M.empty
 
 toTestsToRunResponse :: TestsState -> TestsToRunResponse
-toTestsToRunResponse = TestsToRunResponse . fmap (uncurry TestToRunResp) . M.toList
+toTestsToRunResponse =
+  TestsToRunResponse . fmap (\(uuid, sd) -> TestToRunResp uuid (sd^.sdDescription) (sd^.sdStatus)) . M.toList
 
 newStatus :: Float -> TestStatus
-newStatus s | s > 0.5 = Passed
+newStatus s | s > 0.5   = Passed
             | otherwise = Failed

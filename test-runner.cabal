@@ -12,6 +12,8 @@ category:       WebApp
 homepage:       https://github.com/jproyo/test-runner
 author:         Juan Pablo Royo Sales
 maintainer:     juanpablo.royo@gmail.com
+license:        BSD3
+license-file:   LICENSE
 build-type:     Simple
 
 library
