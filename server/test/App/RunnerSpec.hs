@@ -32,7 +32,7 @@ spec = do
       result <- liftIO $ runWithTest st (submitTestsNew $ TestsToRun tests)
       case result of 
         Right r -> do 
-          result' <- liftIO $ runWithTest st (statuses (r^.ttrrTestSetId))
+          result' <- liftIO $ runWithTest st (statuses (r^.ttrrTestSetId.coerced))
           result' `shouldSatisfy` isRight
         Left _ -> expectationFailure "IMPOSIBLE"
 

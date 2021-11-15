@@ -1,9 +1,7 @@
 module Data.Runner where
 
 import           Control.Lens
-import           Data.Aeson
 import qualified Data.Map.Strict               as M
-import           Data.UUID
 import           Deriving.Aeson
 import           Relude
 
@@ -12,36 +10,21 @@ data TestStatus = NotStartedYet
                 | Passed
                 | Failed
   deriving (Generic, Show)
-  deriving ToJSON via CustomJSON
-    '[ OmitNothingFields
-     , FieldLabelModifier '[CamelToSnake]
-     ]
-    TestStatus
 
-data GeneralStatus = Submitted
+data GeneralStatus = NotStarted
+                   | Submitted
                    | InProgress
                    | Finished
   deriving (Generic, Show)
-  deriving ToJSON via CustomJSON
-    '[ OmitNothingFields
-     , FieldLabelModifier '[CamelToSnake]
-     ]
-    GeneralStatus
 
 newtype TestsToRun = TestsToRun [TestToRun]
   deriving (Generic, Show)
-  deriving newtype FromJSON
 
 data TestToRun = TestToRun
   { _ttrDescription :: Text
   , _ttrRun         :: Text
   }
   deriving (Generic, Show)
-  deriving FromJSON via CustomJSON
-    '[ OmitNothingFields
-     , FieldLabelModifier '[StripPrefix "_ttr" , CamelToSnake]
-     ]
-    TestToRun
 
 data TestsToRunResponse = TestsToRunResponse
   { _ttrrGeneralStatus :: GeneralStatus
@@ -49,15 +32,10 @@ data TestsToRunResponse = TestsToRunResponse
   , _ttrrResults       :: [Test]
   }
   deriving (Generic, Show)
-  deriving ToJSON via CustomJSON
-    '[ OmitNothingFields
-     , FieldLabelModifier '[StripPrefix "_ttrr" , CamelToSnake]
-     ]
-    TestsToRunResponse
 
-newtype TestId = TestId UUID
+newtype TestId = TestId Text
   deriving (Generic, Show)
-  deriving newtype (FromJSON, ToJSON, Ord, Eq)
+  deriving newtype (Ord, Eq, IsString)
 
 data Test = Test
   { _tId          :: TestId
@@ -65,9 +43,6 @@ data Test = Test
   , _tDescription :: Text
   }
   deriving (Generic, Show)
-  deriving ToJSON via CustomJSON
-    '[OmitNothingFields , FieldLabelModifier '[StripPrefix "_t" , CamelToSnake]]
-    Test
 
 instance Eq Test where
   (==) t1 t2 = _tId t1 == _tId t2

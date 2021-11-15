@@ -2,6 +2,7 @@ module Effects.Interpreters.IdGenUUID where
 
 import           Data.Runner
 import           Data.UUID.V4
+import           Data.UUID as D
 import           Effects.IdGen
 import           Polysemy
 import           Relude
@@ -14,4 +15,4 @@ runUUIDGen :: forall effs a
            => Sem (IdGen ': effs) a
            -> Sem effs a
 runUUIDGen = interpret $ \case
-  GenNew -> embed $ TestId <$> nextRandom
+  GenNew -> embed $ TestId . D.toText <$> nextRandom

@@ -23,3 +23,8 @@ TAGS
 cabal.project.local~
 .HTF/
 .ghc.environment.*
+client/src/TestRunnerApi.elm
+client/elm-stuff/
+client/tests/elm-stuff/
+client/tests.js
+assets/index.html

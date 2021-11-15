@@ -65,31 +65,33 @@ dependencies:
   - co-log-polysemy
   - containers
   - deriving-aeson
+  - elm-bridge
   - http-types
   - inline-js
   - lens
-  - lucid
   - mtl
   - polysemy
   - polysemy-plugin
   - relude
   - optparse-applicative
   - servant-server
+  - servant-elm
   - uuid
   - wai
   - wai-cors
+  - wai-make-assets
   - warp
   - yaml
 
 library:
-  source-dirs: src
+  source-dirs: server/src
   exposed-modules:
     - Runner
 
 executables:
   test-runner:
     source-dirs:
-      app
+      server/app
     main:
       Main.hs
     dependencies:
@@ -104,8 +106,8 @@ tests:
   test-runner-tests:
     main: Spec.hs
     source-dirs:
-      - test
-      - src
+      - server/test
+      - server/src
     ghc-options:
       - -threaded
       - -O2

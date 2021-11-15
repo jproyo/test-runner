@@ -14,14 +14,14 @@ data SubmitState = New | Current
 newtype Submit (s :: SubmitState) = Submit TestsToRun
 
 statuses :: Members '[Log Text , AppError , Storage] eff
-         => TestId
+         => Text
          -> Sem eff TestsToRunResponse
 statuses testId = do
-  result <- EA.get testId
+  result <- EA.get $ TestId testId
   CP.log $ "Getting results for testId " <> show testId <> " - results " <> show result
   maybe
     (EA.throw $ NO_TESTS_SET_FOUND ("No test found for id " <> show testId))
-    (pure . toTestsToRunResponse testId)
+    (pure . toTestsToRunResponse (TestId testId))
     result
 
 submitTestsNew :: Members

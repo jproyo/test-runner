@@ -35,7 +35,7 @@ library
       Runner.Test
       Paths_test_runner
   hs-source-dirs:
-      src
+      server/src
   default-extensions:
       ConstraintKinds
       DataKinds
@@ -77,19 +77,21 @@ library
     , co-log-polysemy
     , containers
     , deriving-aeson
+    , elm-bridge
     , http-types
     , inline-js
     , lens
-    , lucid
     , mtl
     , optparse-applicative
     , polysemy
     , polysemy-plugin
     , relude
+    , servant-elm
     , servant-server
     , uuid
     , wai
     , wai-cors
+    , wai-make-assets
     , warp
     , yaml
   default-language: Haskell2010
@@ -99,7 +101,7 @@ executable test-runner
   other-modules:
       Paths_test_runner
   hs-source-dirs:
-      app
+      server/app
   default-extensions:
       ConstraintKinds
       DataKinds
@@ -141,20 +143,22 @@ executable test-runner
     , co-log-polysemy
     , containers
     , deriving-aeson
+    , elm-bridge
     , http-types
     , inline-js
     , lens
-    , lucid
     , mtl
     , optparse-applicative
     , polysemy
     , polysemy-plugin
     , relude
+    , servant-elm
     , servant-server
     , test-runner
     , uuid
     , wai
     , wai-cors
+    , wai-make-assets
     , warp
     , yaml
   default-language: Haskell2010
@@ -180,8 +184,8 @@ test-suite test-runner-tests
       Runner.Test
       Paths_test_runner
   hs-source-dirs:
-      test
-      src
+      server/test
+      server/src
   default-extensions:
       ConstraintKinds
       DataKinds
@@ -224,20 +228,22 @@ test-suite test-runner-tests
     , co-log-polysemy
     , containers
     , deriving-aeson
+    , elm-bridge
     , hspec ==2.*
     , http-types
     , inline-js
     , lens
-    , lucid
     , mtl
     , optparse-applicative
     , polysemy
     , polysemy-plugin
     , relude
+    , servant-elm
     , servant-server
     , uuid
     , wai
     , wai-cors
+    , wai-make-assets
     , warp
     , yaml
   default-language: Haskell2010

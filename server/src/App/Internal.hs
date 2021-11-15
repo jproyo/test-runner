@@ -1,8 +1,6 @@
 {-# LANGUAGE TypeOperators   #-}
 
-module App.Internal
-  ( runApp
-  ) where
+module App.Internal where
 
 
 import           App.Context
@@ -10,33 +8,37 @@ import           Colog                         as C
 import           Control.Lens            hiding ( Context )
 import           Data.Runner
 import           Effects.Algebras        hiding ( run )
+import qualified Elm.Derive
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Method
 import           Network.Wai
 import           Network.Wai.Handler.Warp
+import           Network.Wai.MakeAssets
 import           Network.Wai.Middleware.Cors
 import           Relude
 import           Runner.Test
 import           Servant                       as S
 
 -- brittany-disable-next-binding
-type TestRunnerApp =  "test" :> "runner" :> "submit"
-                     :> ReqBody '[JSON] TestsToRun
-                     :> Post '[JSON] TestsToRunResponse
-                     :<|> "test" :> "runner" :> "submit" :> "new"
-                     :> ReqBody '[JSON] TestsToRun
-                     :> Post '[JSON] TestsToRunResponse
-                     :<|> "test" :> "runner" :> "status" :> Capture "testId" TestId
-                     :> Get '[JSON] TestsToRunResponse
+type TestRunnerApi =  "api" :> "runner" :> 
+                     ("submit" :> ReqBody '[JSON] TestsToRun :> Post '[JSON] TestsToRunResponse
+                     :<|> "new" :> ReqBody '[JSON] TestsToRun :> Post '[JSON] TestsToRunResponse
+                     :<|> "status" :> Capture "testId" Text :> Get '[JSON] TestsToRunResponse)
 
-instance FromHttpApiData TestId where
-  parseQueryParam = fmap TestId . parseQueryParam
+type TestRunnerApp =  TestRunnerApi :<|> Raw
 
 testRunnerApp :: Proxy TestRunnerApp
 testRunnerApp = Proxy
 
-server :: ServerT TestRunnerApp (Sem InterpreterApp)
-server = submitEndpointCurrent :<|> submitNewEndpoint :<|> getStatuses
+options :: Options
+options = Options "client"
+
+server :: Application -> ServerT TestRunnerApp (Sem InterpreterApp)
+server assets =
+  (submitEndpointCurrent
+    :<|> submitNewEndpoint
+    :<|> getStatuses)
+    :<|> Tagged assets
 
 submitEndpointCurrent :: TestsToRun -> Sem InterpreterApp TestsToRunResponse
 submitEndpointCurrent = submitTestsCurrent
@@ -44,14 +46,12 @@ submitEndpointCurrent = submitTestsCurrent
 submitNewEndpoint :: TestsToRun -> Sem InterpreterApp TestsToRunResponse
 submitNewEndpoint = submitTestsNew
 
-getStatuses :: TestId -> Sem InterpreterApp TestsToRunResponse
+getStatuses :: Text -> Sem InterpreterApp TestsToRunResponse
 getStatuses = statuses
 
-nt :: TMVar TestState -> Sem InterpreterApp a -> Handler a
-nt = runEffects
-
-startApp :: TestRunnerConf -> TMVar TestState -> Application
-startApp _ s = serve testRunnerApp $ hoistServer testRunnerApp (nt s) server
+startApp :: TestRunnerConf -> TMVar TestState -> Application -> Application
+startApp _ s assets =
+  serve testRunnerApp $ hoistServer testRunnerApp (runEffects s) (server assets)
 
 addCors :: Middleware
 addCors = cors $ const $ Just $ CorsResourcePolicy
@@ -73,5 +73,13 @@ runApp conf = do
   usingLoggerT action $ do
     C.log I "Starting Test Runner App ...."
     C.log I $ "Listening on port " <> show port
-  run port . addCors $ startApp conf appMemory
+  assets <- serveAssets options
+  run port . addCors $ startApp conf appMemory assets
 
+Elm.Derive.deriveBoth Elm.Derive.defaultOptions  ''TestsToRun
+Elm.Derive.deriveBoth (Elm.Derive.defaultOptionsDropLower 4) ''TestToRun
+Elm.Derive.deriveBoth (Elm.Derive.defaultOptionsDropLower 5) ''TestsToRunResponse
+Elm.Derive.deriveBoth Elm.Derive.defaultOptions ''TestId
+Elm.Derive.deriveBoth (Elm.Derive.defaultOptionsDropLower 2) ''Test
+Elm.Derive.deriveBoth Elm.Derive.defaultOptions ''GeneralStatus
+Elm.Derive.deriveBoth Elm.Derive.defaultOptions ''TestStatus
