@@ -8,8 +8,8 @@ module App.Internal
 import           App.Context
 import           Colog                         as C
 import           Control.Lens            hiding ( Context )
-import           Data.Error
 import           Data.Runner
+import           Effects.Algebras        hiding ( run )
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Method
 import           Network.Wai
@@ -20,39 +20,37 @@ import           Runner.Test
 import           Servant                       as S
 
 -- brittany-disable-next-binding
-type TestRunnerApp =  "test" :> "runner" :> "submit" 
+type TestRunnerApp =  "test" :> "runner" :> "submit"
                      :> ReqBody '[JSON] TestsToRun
                      :> Post '[JSON] TestsToRunResponse
                      :<|> "test" :> "runner" :> "submit" :> "new"
                      :> ReqBody '[JSON] TestsToRun
                      :> Post '[JSON] TestsToRunResponse
-                     :<|> "test" :> "runner" :> "status"
+                     :<|> "test" :> "runner" :> "status" :> Capture "testId" TestId
                      :> Get '[JSON] TestsToRunResponse
 
-type AppM = ReaderT (TMVar TestsState) Handler -- ^ Handler ~ ExceptT ServerError IO a
+instance FromHttpApiData TestId where
+  parseQueryParam = fmap TestId . parseQueryParam
 
 testRunnerApp :: Proxy TestRunnerApp
 testRunnerApp = Proxy
 
-server :: ServerT TestRunnerApp AppM
+server :: ServerT TestRunnerApp (Sem InterpreterApp)
 server = submitEndpointCurrent :<|> submitNewEndpoint :<|> getStatuses
 
-submitEndpointCurrent :: TestsToRun -> AppM TestsToRunResponse
-submitEndpointCurrent = mapError' <=< submitTestsCurrent
+submitEndpointCurrent :: TestsToRun -> Sem InterpreterApp TestsToRunResponse
+submitEndpointCurrent = submitTestsCurrent
 
-submitNewEndpoint :: TestsToRun -> AppM TestsToRunResponse
-submitNewEndpoint = mapError' <=< submitTestsNew
+submitNewEndpoint :: TestsToRun -> Sem InterpreterApp TestsToRunResponse
+submitNewEndpoint = submitTestsNew
 
-getStatuses :: AppM TestsToRunResponse
-getStatuses = statuses >>= mapError'
+getStatuses :: TestId -> Sem InterpreterApp TestsToRunResponse
+getStatuses = statuses
 
-mapError' :: Either AppError a -> AppM a
-mapError' = either toServantError return
+nt :: TMVar TestState -> Sem InterpreterApp a -> Handler a
+nt = runEffects
 
-nt :: TMVar TestsState -> AppM a -> Handler a
-nt s x = runReaderT x s
-
-startApp :: TestRunnerConf -> TMVar TestsState -> Application
+startApp :: TestRunnerConf -> TMVar TestState -> Application
 startApp _ s = serve testRunnerApp $ hoistServer testRunnerApp (nt s) server
 
 addCors :: Middleware

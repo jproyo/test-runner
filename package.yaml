@@ -16,6 +16,7 @@ ghc-options:
   - -fconstraint-solver-iterations=0
   - -flate-specialise 
   - -fspecialise-aggressively
+  - -fplugin=Polysemy.Plugin
   - -Wincomplete-record-updates
   - -Wincomplete-uni-patterns
   - -Wredundant-constraints
@@ -63,16 +64,19 @@ dependencies:
   - base
   - bytestring
   - co-log
+  - co-log-polysemy
   - containers
   - deriving-aeson
-  - extra
   - http-client
   - http-types
   - inline-js
   - inline-js-core
   - lens
+  - lucid
   - mtl
   - network
+  - polysemy
+  - polysemy-plugin
   - relude
   - optparse-applicative
   - servant-server

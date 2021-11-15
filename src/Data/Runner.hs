@@ -48,7 +48,8 @@ data TestToRun = TestToRun
 
 data TestsToRunResponse = TestsToRunResponse
   { _ttrrGeneralStatus :: GeneralStatus
-  , _ttrrResults       :: [TestToRunResp]
+  , _ttrrTestSetId     :: TestId
+  , _ttrrResults       :: [Test]
   }
   deriving (Generic, Show)
   deriving ToJSON via CustomJSON
@@ -57,31 +58,36 @@ data TestsToRunResponse = TestsToRunResponse
      ]
     TestsToRunResponse
 
-data StatusDesc = StatusDesc
-  { _sdDescription :: Text
-  , _sdStatus      :: TestStatus
-  }
+newtype TestId = TestId UUID
+  deriving (Generic, Show)
+  deriving newtype (FromJSON, ToJSON, Ord, Eq)
 
-data TestToRunResp = TestToRunResp
-  { _ttrrId          :: UUID
-  , _ttrrDescription :: Text
-  , _ttrrStatus      :: TestStatus
+data Test = Test
+  { _tId          :: TestId
+  , _tStatus      :: TestStatus
+  , _tDescription :: Text
   }
   deriving (Generic, Show)
   deriving ToJSON via CustomJSON
-    '[ OmitNothingFields
-     , FieldLabelModifier '[StripPrefix "_ttrr" , CamelToSnake]
-     ]
-    TestToRunResp
+    '[OmitNothingFields , FieldLabelModifier '[StripPrefix "_t" , CamelToSnake]]
+    Test
 
+instance Eq Test where
+  (==) t1 t2 = _tId t1 == _tId t2
 
-type TestsState = M.Map UUID StatusDesc
+newtype TestSet = TestSet [Test]
+  deriving (Generic, Show)
 
-makeLenses ''TestToRunResp
+instance Wrapped TestSet
+
+type TestState = M.Map TestId TestSet
+
 makeLenses ''TestsToRunResponse
 makeLenses ''TestToRun
 makePrisms ''TestStatus
-makeLenses ''StatusDesc
+makeLenses ''Test
+makeLenses ''TestSet
+makeLenses ''TestId
 
 inProgress :: TestStatus -> Bool
 inProgress NotStartedYet = False
@@ -92,24 +98,15 @@ hasFinished Passed = True
 hasFinished Failed = True
 hasFinished _      = False
 
-emptyState :: TestsState
+emptyState :: TestState
 emptyState = M.empty
 
-toTestsToRunResponse :: TestsState -> TestsToRunResponse
-toTestsToRunResponse st =
-  let
-    results =
-      fmap
-          (\(uuid, sd) ->
-            TestToRunResp uuid (sd ^. sdDescription) (sd ^. sdStatus)
-          )
-        . M.toList
-        $ st
-    generalStatus | all (hasFinished . view ttrrStatus) results = Finished
-                  | any (inProgress . view ttrrStatus) results = InProgress
-                  | otherwise = Submitted
-  in
-    TestsToRunResponse generalStatus results
+toTestsToRunResponse :: TestId -> TestSet -> TestsToRunResponse
+toTestsToRunResponse testId (TestSet st) =
+  let generalStatus | all (hasFinished . view tStatus) st = Finished
+                    | any (inProgress . view tStatus) st  = InProgress
+                    | otherwise                              = Submitted
+  in  TestsToRunResponse generalStatus testId st
 
 newStatus :: Float -> TestStatus
 newStatus s | s > 0.5   = Passed

@@ -42,6 +42,8 @@ packages:
 extra-deps:
 - co-log-0.4.0.1
 
+- co-log-polysemy-0.0.1.3
+
 - github: tweag/inline-js
   commit: d69124edeb9ac7aed91c521700d11019473077c9
   subdirs:
