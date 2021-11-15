@@ -72,27 +72,21 @@ library
   ghc-options: -O3 -Wall -Werror -fno-warn-partial-type-signatures -fno-warn-orphans -fconstraint-solver-iterations=0 -flate-specialise -fspecialise-aggressively -fplugin=Polysemy.Plugin -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       aeson
-    , async
     , base
-    , bytestring
     , co-log
     , co-log-polysemy
     , containers
     , deriving-aeson
-    , http-client
     , http-types
     , inline-js
-    , inline-js-core
     , lens
     , lucid
     , mtl
-    , network
     , optparse-applicative
     , polysemy
     , polysemy-plugin
     , relude
     , servant-server
-    , time
     , uuid
     , wai
     , wai-cors
@@ -142,28 +136,22 @@ executable test-runner
   ghc-options: -O3 -Wall -Werror -fno-warn-partial-type-signatures -fno-warn-orphans -fconstraint-solver-iterations=0 -flate-specialise -fspecialise-aggressively -fplugin=Polysemy.Plugin -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unused-top-binds -threaded -O3 -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , async
     , base
-    , bytestring
     , co-log
     , co-log-polysemy
     , containers
     , deriving-aeson
-    , http-client
     , http-types
     , inline-js
-    , inline-js-core
     , lens
     , lucid
     , mtl
-    , network
     , optparse-applicative
     , polysemy
     , polysemy-plugin
     , relude
     , servant-server
     , test-runner
-    , time
     , uuid
     , wai
     , wai-cors
@@ -231,28 +219,22 @@ test-suite test-runner-tests
   build-depends:
       QuickCheck
     , aeson
-    , async
     , base
-    , bytestring
     , co-log
     , co-log-polysemy
     , containers
     , deriving-aeson
     , hspec ==2.*
-    , http-client
     , http-types
     , inline-js
-    , inline-js-core
     , lens
     , lucid
     , mtl
-    , network
     , optparse-applicative
     , polysemy
     , polysemy-plugin
     , relude
     , servant-server
-    , time
     , uuid
     , wai
     , wai-cors

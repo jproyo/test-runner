@@ -60,27 +60,21 @@ default-extensions:
 
 dependencies:
   - aeson
-  - async
   - base
-  - bytestring
   - co-log
   - co-log-polysemy
   - containers
   - deriving-aeson
-  - http-client
   - http-types
   - inline-js
-  - inline-js-core
   - lens
   - lucid
   - mtl
-  - network
   - polysemy
   - polysemy-plugin
   - relude
   - optparse-applicative
   - servant-server
-  - time
   - uuid
   - wai
   - wai-cors
