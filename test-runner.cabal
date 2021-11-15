@@ -175,6 +175,7 @@ test-suite test-runner-tests
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      App.RunnerSpec
       App.Context
       App.Internal
       Data.Runner

@@ -7,7 +7,6 @@ import           Data.UUID
 import           Deriving.Aeson
 import           Relude
 
-
 data TestStatus = NotStartedYet
                 | Running
                 | Passed
@@ -29,15 +28,13 @@ data GeneralStatus = Submitted
      ]
     GeneralStatus
 
-type Function = Text
-
 newtype TestsToRun = TestsToRun [TestToRun]
   deriving (Generic, Show)
   deriving newtype FromJSON
 
 data TestToRun = TestToRun
   { _ttrDescription :: Text
-  , _ttrRun         :: Function
+  , _ttrRun         :: Text
   }
   deriving (Generic, Show)
   deriving FromJSON via CustomJSON
@@ -105,7 +102,7 @@ toTestsToRunResponse :: TestId -> TestSet -> TestsToRunResponse
 toTestsToRunResponse testId (TestSet st) =
   let generalStatus | all (hasFinished . view tStatus) st = Finished
                     | any (inProgress . view tStatus) st  = InProgress
-                    | otherwise                              = Submitted
+                    | otherwise                           = Submitted
   in  TestsToRunResponse generalStatus testId st
 
 newStatus :: Float -> TestStatus

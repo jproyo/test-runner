@@ -4,6 +4,7 @@ module Runner.Test
   , submitTestsCurrent
   ) where
 
+import           Colog.Polysemy                as CP
 import           Control.Lens
 import           Data.Runner
 import           Effects.Algebras              as EA
@@ -17,6 +18,7 @@ statuses :: Members '[Log Text , AppError , Storage] eff
          -> Sem eff TestsToRunResponse
 statuses testId = do
   result <- EA.get testId
+  CP.log $ "Getting results for testId " <> show testId <> " - results " <> show result
   maybe
     (EA.throw $ NO_TESTS_SET_FOUND ("No test found for id " <> show testId))
     (pure . toTestsToRunResponse testId)
@@ -55,6 +57,7 @@ submitTestsNew' :: Members
                 -> Sem eff TestsToRunResponse
 submitTestsNew' (Submit tests) = do
   submitted <- submitNew tests
+  CP.log $ "Submitting new batch tests " <> show submitted
   save (submitted ^. ttrrTestSetId) (submitted ^. ttrrResults . to TestSet)
   return submitted
 
