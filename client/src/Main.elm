@@ -1,5 +1,15 @@
 module Main exposing (FromServer(..), FromUi(..), Model, Msg(..), fromServer, init, main, update, view, viewTestToRun)
 
+import Bootstrap.Badge as Badge
+import Bootstrap.Button as Buttom
+import Bootstrap.CDN as CDN
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Grid.Row as Row
+import Bootstrap.ListGroup as ListGroup
+import Bootstrap.Spinner as Spinner
+import Bootstrap.Table as Table
+import Bootstrap.Text as T
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,12 +32,22 @@ main =
 
 -- MODEL
 
+
 statusToInt : TestStatus -> Int
-statusToInt st = case st of 
-    Passed -> 1
-    Failed -> 2
-    Running -> 3
-    NotStartedYet -> 4
+statusToInt st =
+    case st of
+        Passed ->
+            1
+
+        Failed ->
+            2
+
+        Running ->
+            3
+
+        NotStartedYet ->
+            4
+
 
 type alias Model =
     { tests : List TestToRun
@@ -57,9 +77,11 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.result of
         Just r ->
-            if r.generalStatus == Finished
-                then Sub.none
-                else Time.every 1000 Polling
+            if r.generalStatus == Finished then
+                Sub.none
+
+            else
+                Time.every 1000 Polling
 
         Nothing ->
             Sub.none
@@ -175,45 +197,162 @@ view model =
                 |> Maybe.withDefault (Html.text "")
 
         divTestRun =
-            div
-                [ hidden model.submitted ]
-                [ span [ style "bold" "true" ] [ text "Test Runner" ]
-                , ul [] items
-                , button [ onClick (FromUi SubmitTestsButton) ] [ text "Run Test Set" ]
+            [ CDN.stylesheet
+            , Grid.row
+                [ Row.aroundXl ]
+                [ Grid.col
+                    [ Col.xl6 ]
+                    [ h1 [] [ text "Test Runner" ] ]
                 ]
+            , Grid.row
+                [ Row.aroundXl ]
+                [ Grid.col
+                    [ Col.xl12 ]
+                    [ Table.table
+                        { options = [ Table.striped ]
+                        , thead =
+                            Table.simpleThead
+                                [ Table.th [] [ text "Description" ]
+                                , Table.th [] [ text "Function" ]
+                                ]
+                        , tbody = Table.tbody [] items
+                        }
+                    ]
+                ]
+            , Grid.row
+                [ Row.aroundXl ]
+                [ Grid.col
+                    [ Col.xl12 ]
+                    [ Buttom.button [ Buttom.primary, Buttom.onClick (FromUi SubmitTestsButton) ] [ text "Run Test Set" ]
+                    ]
+                ]
+            , Grid.row
+                [ Row.aroundXl ]
+                [ Grid.col
+                    [ Col.xl12 ]
+                    [ error ]
+                ]
+            ]
 
         divTestResult =
-            div
-                [ hidden (NotStarted == resultOrDefault.generalStatus) ]
-                [ span [ style "bold" "true" ] [ text "Test Runner - Results" ]
-                , span [ style "bold" "true" ] [ text ("Result - " ++ Debug.toString resultOrDefault.generalStatus) ]
-                , ul [] resultRunner
+            [ CDN.stylesheet
+            , Grid.row
+                [ Row.aroundXl ]
+              <|
+                if resultOrDefault.generalStatus /= Finished then
+                    [ Grid.col
+                        [ Col.xl6 ]
+                        [ h1 [] [ text "Test Runner - Results" ]
+                        ]
+                    , Grid.col
+                        [ Col.xl6 ]
+                        [ Spinner.spinner
+                            [ Spinner.large
+                            , Spinner.color T.primary
+                            ]
+                            [ Spinner.srMessage (Debug.toString resultOrDefault.generalStatus) ]
+                        ]
+                    ]
+
+                else
+                    [ Grid.col
+                        [ Col.xl6 ]
+                        [ h1 [ attribute "class" "text-info" ] [ text "FINISHED" ] ]
+                    ]
+            , Grid.row
+                [ Row.aroundXl ]
+                [ Grid.col
+                    [ Col.xl12 ]
+                    [ Table.table
+                        { options = [ Table.striped ]
+                        , thead =
+                            Table.simpleThead
+                                [ Table.th [] [ text "Id" ]
+                                , Table.th [] [ text "Description" ]
+                                , Table.th [] [ text "Status" ]
+                                ]
+                        , tbody = Table.tbody [] resultRunner
+                        }
+                    ]
                 ]
+            , Grid.row
+                [ Row.aroundXl ]
+                [ Grid.col
+                    [ Col.xl12 ]
+                    [ error ]
+                ]
+            , if resultOrDefault.generalStatus /= Finished then
+                Grid.row [] []
+
+              else
+                Grid.row
+                    [ Row.aroundXl ]
+                    [ Grid.col
+                        [ Col.xl12 ]
+                        [ Buttom.button [ Buttom.primary, Buttom.onClick (FromUi SubmitTestsButton) ] [ text "Run Again Test Set" ]
+                        ]
+                    ]
+            ]
     in
-    div []
-        [ divTestRun
-        , divTestResult
-        , error
-        ]
+    Grid.container [] <|
+        if not model.submitted then
+            divTestRun
+
+        else if NotStarted /= resultOrDefault.generalStatus then
+            divTestResult
+
+        else
+            []
 
 
-viewTestResult : Test -> Html Msg
+toColorGeneralStatus : GeneralStatus -> Html Msg
+toColorGeneralStatus st =
+    case st of
+        Finished ->
+            Badge.badgeSuccess [] [ text "FINISHED" ]
+
+        NotStarted ->
+            Badge.badgeLight [] [ text "Not started yet" ]
+
+        Submitted ->
+            Badge.badgeInfo [] [ text "Submitted" ]
+
+        InProgress ->
+            Badge.badgePrimary [] [ text "In Progress" ]
+
+
+toColorStatus : TestStatus -> List (Table.RowOption Msg)
+toColorStatus st =
+    case st of
+        Passed ->
+            [ Table.rowSuccess ]
+
+        Failed ->
+            [ Table.rowDanger ]
+
+        Running ->
+            [ Table.rowInfo ]
+
+        NotStartedYet ->
+            []
+
+
+viewTestResult : Test -> Table.Row Msg
 viewTestResult test =
-    li []
-        [ text test.id
-        , text " - "
-        , text test.description
-        , text " - "
-        , text (Debug.toString test.status)
+    Table.tr
+        (toColorStatus test.status)
+        [ Table.td [] [ text test.id ]
+        , Table.td [] [ text test.description ]
+        , Table.td [] [ text (Debug.toString test.status) ]
         ]
 
 
-viewTestToRun : TestToRun -> Html Msg
+viewTestToRun : TestToRun -> Table.Row Msg
 viewTestToRun test =
-    li []
-        [ text test.description
-        , text " - "
-        , text test.run
+    Table.tr
+        []
+        [ Table.td [] [ text test.description ]
+        , Table.td [] [ text test.run ]
         ]
 
 
