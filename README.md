@@ -37,11 +37,18 @@ Server side has been built using:
 - `server/src/Runner`: Program that uses the effects and composes them to fulfill the requirements.
 - `server/test`: Test of Programs
 
+## TODO
+There are several improvements and implementations that I would have liked to do in order to provide a more robust implementation. Things that are pending are the following:
+
+- Implement a WebSocket mechanism to get the Status of the Test Suite Running instead of Polling for the status every second.
+- Implement some security mechanism between the UI and the Backend
+- Implement a more dynamic solution for injecting dynamic code in the testing from the UI
+
 ## Building and Running the Program
 
 The program provides a `Makefile` to help the user to build and start the project easily.
 
-> NOTE: By default the server will start in port 7001. If you have any issue with that port it can be changed in the configuration file `server/app/conf.yaml` or providing the environment variable `TEST_RUNNER_PORT`.
+> NOTE: By default, the server will start in port 7001. If there is any issue with the port, it can be changed in the configuration file `server/app/conf.yaml` or by providing the environment variable `TEST_RUNNER_PORT`.
 
 ### Prerequisites
 
