@@ -1,0 +1,87 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           tic-tac-toe-api
+version:        0.0.0.1
+synopsis:       Tic-Tac-Toe API Lib
+description:    Please see README.md
+category:       WebApp
+homepage:       https://github.com/jproyo/test-runner
+author:         Juan Pablo Royo Sales
+maintainer:     juanpablo.royo@gmail.com
+build-type:     Simple
+
+library
+  exposed-modules:
+      TicTacToe
+  other-modules:
+      TicTacToe.Program
+      Paths_tic_tac_toe_api
+  hs-source-dirs:
+      src
+  default-extensions:
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DerivingStrategies
+      DerivingVia
+      EmptyCase
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NoImplicitPrelude
+      OverloadedStrings
+      PartialTypeSignatures
+      PolyKinds
+      RecordWildCards
+      Rank2Types
+      RankNTypes
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeFamilyDependencies
+      TypeOperators
+  ghc-options: -O3 -Wall -Werror -fno-warn-partial-type-signatures -fno-warn-orphans -fconstraint-solver-iterations=0 -flate-specialise -fspecialise-aggressively -fplugin=Polysemy.Plugin -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unused-top-binds
+  build-depends:
+      HList
+    , QuickCheck
+    , aeson
+    , base
+    , co-log
+    , co-log-polysemy
+    , containers
+    , deriving-aeson
+    , elm-bridge
+    , http-types
+    , inline-js
+    , lens
+    , mtl
+    , optparse-applicative
+    , polysemy
+    , polysemy-plugin
+    , random
+    , relude
+    , servant-elm
+    , servant-server
+    , time
+    , uuid
+    , wai
+    , wai-cors
+    , wai-make-assets
+    , warp
+    , yaml
+  default-language: Haskell2010

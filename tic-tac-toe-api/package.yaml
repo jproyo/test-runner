@@ -1,0 +1,128 @@
+name:               tic-tac-toe-api
+version:            '0.0.0.1'
+synopsis:           Tic-Tac-Toe API Lib
+description:        Please see README.md
+category:           WebApp
+author:             Juan Pablo Royo Sales
+maintainer:         juanpablo.royo@gmail.com
+homepage:           https://github.com/jproyo/test-runner
+
+ghc-options:
+  - -O3
+  - -Wall
+  - -Werror
+  - -fno-warn-partial-type-signatures
+  - -fno-warn-orphans
+  - -fconstraint-solver-iterations=0
+  - -flate-specialise 
+  - -fspecialise-aggressively
+  - -fplugin=Polysemy.Plugin
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+  - -Wno-unused-top-binds
+
+default-extensions:
+  - ConstraintKinds
+  - DataKinds
+  - DefaultSignatures
+  - DeriveAnyClass
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveLift
+  - DerivingStrategies
+  - DerivingVia
+  - EmptyCase
+  - FlexibleContexts
+  - FlexibleInstances
+  - FunctionalDependencies
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - MultiParamTypeClasses
+  - MultiWayIf
+  - NoImplicitPrelude
+  - OverloadedStrings
+  - PartialTypeSignatures
+  - PolyKinds
+  - RecordWildCards
+  - Rank2Types
+  - RankNTypes
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TemplateHaskell
+  - TypeApplications
+  - TypeFamilies
+  - TypeFamilyDependencies
+  - TypeOperators
+  
+  
+
+dependencies:
+  - aeson
+  - base
+  - co-log
+  - co-log-polysemy
+  - containers
+  - deriving-aeson
+  - elm-bridge
+  - HList
+  - http-types
+  - inline-js
+  - lens
+  - mtl
+  - polysemy
+  - polysemy-plugin
+  - relude
+  - optparse-applicative
+  - random
+  - time
+  - servant-server
+  - servant-elm
+  - uuid
+  - wai
+  - wai-cors
+  - wai-make-assets
+  - warp
+  - yaml
+  - QuickCheck
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - TicTacToe
+
+# executables:
+#   mondrian-app:
+#     source-dirs:
+#       app
+#     main:
+#       Main.hs
+#     dependencies:
+#       - mondrian
+#     ghc-options:
+#       - -threaded
+#       - -O3
+#       - -rtsopts
+#       - -with-rtsopts=-N
+
+# tests:
+#   leghist-tests:
+#     main: Spec.hs
+#     source-dirs:
+#       - test
+#       - src
+#     ghc-options:
+#       - -threaded
+#       - -O2
+#       - -rtsopts
+#       - -with-rtsopts=-N
+#       # TODO remove no warnings
+#       - -Wno-unused-local-binds
+#       - -Wno-unused-matches
+#     dependencies:
+#       - hspec == 2.*
+#       - containers
+#       - aeson
+#       - QuickCheck
+

@@ -29,7 +29,10 @@ resolver: lts-18.16
 #   - auto-update
 #   - wai
 packages:
-- .
+- tic-tac-toe-api
+#- mondrian
+#- leghist
+#- .
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
@@ -45,6 +48,8 @@ extra-deps:
 - co-log-polysemy-0.0.1.3
 
 - wai-make-assets-0.3
+
+- HList-0.5.1.0
 
 - github: tweag/inline-js
   commit: d69124edeb9ac7aed91c521700d11019473077c9

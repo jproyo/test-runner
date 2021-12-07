@@ -26,6 +26,13 @@ packages:
   original:
     hackage: wai-make-assets-0.3
 - completed:
+    hackage: HList-0.5.1.0@sha256:3ecb2d10ad2b3d36ad28e2f08505f9c3d7143ca737ef13b3e64db503635966c2,7525
+    pantry-tree:
+      size: 5800
+      sha256: fe9d53555847bd16ffd46e3fb6013751c23f375a95d05b4d4c8de0bb22911e72
+  original:
+    hackage: HList-0.5.1.0
+- completed:
     size: 30272
     subdir: inline-js
     url: https://github.com/tweag/inline-js/archive/d69124edeb9ac7aed91c521700d11019473077c9.tar.gz

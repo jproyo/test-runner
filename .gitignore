@@ -28,3 +28,4 @@ client/elm-stuff/
 client/tests/elm-stuff/
 client/tests.js
 assets/index.html
+.DS_Store

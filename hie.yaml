@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "mondrian/src"
+      component: "mondrian:lib"
+
+    - path: "mondrian/app/Main.hs"
+      component: "mondrian:exe:mondrian-app"
+
+    - path: "mondrian/app/Paths_mondrian.hs"
+      component: "mondrian:exe:mondrian-app"
